@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",                          // Set target JavaScript version
+    "useDefineForClassFields": true,              // Ensures class fields are defined using `define`
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],     // Specifies the library files to include
+    "module": "ESNext",                           // Set module system to ESNext
+    "moduleResolution": "node",                   // Resolve modules as Node.js does
+    "skipLibCheck": true,                         // Skips type checking of declaration files
+    "composite": true,                            // Enable project references
+    "esModuleInterop": true,                      // Ensures compatibility with CommonJS modules
+    "allowSyntheticDefaultImports": true,         // Allows default imports from modules without default export
+    "strict": true,                               // Enables strict type-checking options
+    "forceConsistentCasingInFileNames": true,     // Enforces consistent casing in file names
+    "noEmit": false,                              // Allow emitting output
+    "jsx": "react-jsx",                           // Enable React JSX transform
+    "baseUrl": "src",                             // Set base directory to `src`
+    "paths": {
+      "@/*": ["*"]                                // Map '@' to the src folder
+    }
+  },
+  "include": ["src"],                             // Include all files under `src` folder
+  "exclude": ["node_modules"]                     // Exclude node_modules from compilation
+}

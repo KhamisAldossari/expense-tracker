@@ -1,0 +1,116 @@
+/* Basic reset for margin and padding */
+* {
+  box-sizing: border-box;
+}
+
+/* Body styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Main container */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* App layout styles */
+.app-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading styles */
+h1,
+h2,
+h3 {
+  color: #4a90e2;
+  margin-bottom: 15px;
+}
+
+/* Expense list styling */
+.expense-list {
+  margin-top: 20px;
+}
+
+.expense-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #fafafa;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.expense-item p {
+  margin: 0;
+}
+
+.expense-item button {
+  background-color: #ff6347;
+  color: #fff;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.expense-item button:hover {
+  background-color: #ff4500;
+}
+
+/* Add expense form styling */
+.add-expense-form {
+  margin-top: 20px;
+}
+
+.add-expense-form input {
+  padding: 8px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 200px;
+}
+
+.add-expense-form button {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.add-expense-form button:hover {
+  background-color: #45a049;
+}
+
+/* Loading spinner */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  color: #4a90e2;
+}
+
+.loading::after {
+  content: "Loading...";
+}
+
+/* No data found */
+.no-expenses {
+  text-align: center;
+  color: #888;
+  margin-top: 20px;
+}
