@@ -29,5 +29,4 @@ export interface ExpenseStore {
     // Computed
     getFilteredExpenses: () => Expense[];
     getTotalExpenses: () => number;
-    // getMonthlyExpenses: () => number;
   }

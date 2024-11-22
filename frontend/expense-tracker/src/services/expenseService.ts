@@ -22,18 +22,6 @@ export const expenseService = USE_MOCK ? mockExpenseService : {
     }
   },
 
-  async getCategories(): Promise<Category[]> {
-    try {
-      console.log('[Categories] Fetching categories');
-      const { data } = await axiosInstance.get<Category[]>('/categories');
-      console.log('[Categories] Successfully fetched categories:', data);
-      return data;
-    } catch (error) {
-      console.error('[Categories] Failed to fetch categories:', error);
-      throw error;
-    }
-  },
-
   async addExpense(expense: ExpenseCreateUpdatePayload): Promise<Expense> {
     try {
       console.log('[Expenses] Adding new expense:', expense);
@@ -69,3 +57,19 @@ export const expenseService = USE_MOCK ? mockExpenseService : {
     }
   }
 };
+
+export const categoriesService = USE_MOCK ? mockCategoriesService : {
+
+  async getCategories(): Promise<Category[]> {
+    try {
+      console.log('[Categories] Fetching categories');
+      const { data } = await axiosInstance.get<Category[]>('/categories');
+      console.log('[Categories] Successfully fetched categories:', data);
+      return data;
+    } catch (error) {
+      console.error('[Categories] Failed to fetch categories:', error);
+      throw error;
+    }
+  }
+}
+

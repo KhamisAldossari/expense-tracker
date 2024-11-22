@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { expenseService } from '@/services/expenseService';
+import { expenseService, categoriesService } from '@/services/expenseService';
 import { Expense, Category, ExpenseCreateUpdatePayload } from '@/types/expense';
 
 interface ExpenseStore {
@@ -9,7 +9,7 @@ interface ExpenseStore {
   error: string | null;
   fetchExpenses: () => Promise<void>;
   fetchCategories: () => Promise<void>;
-  addExpense: (expense: ExpenseCreateUpdatePayload) => Promise<void>;
+  addExpense: (expense: Omit<Expense ,"id">&ExpenseCreateUpdatePayload) => Promise<void>;
   updateExpense: (id: number, expense: ExpenseCreateUpdatePayload) => Promise<void>;
   deleteExpense: (id: number) => Promise<void>;
   clearError: () => void;
@@ -27,27 +27,25 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
       const expenses = await expenseService.getExpenses();
       set({ expenses, isLoading: false });
     } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to fetch expenses', 
-        isLoading: false 
-      });
+      const errorMessage = error.response?.data?.message || 'Failed to fetch expenses';
+      console.error('[Store] fetchExpenses error:', errorMessage);
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
   fetchCategories: async () => {
     set({ isLoading: true, error: null });
     try {
-      const categories = await expenseService.getCategories();
+      const categories = await categoriesService.getCategories() as Category[];
       set({ categories, isLoading: false });
     } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to fetch categories', 
-        isLoading: false 
-      });
+      const errorMessage = error.response?.data?.message || 'Failed to fetch categories';
+      console.error('[Store] fetchCategories error:', errorMessage);
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
-  addExpense: async (expense) => {
+  addExpense: async (expense: Omit<Expense ,"id">&ExpenseCreateUpdatePayload ) => {
     set({ isLoading: true, error: null });
     try {
       const newExpense = await expenseService.addExpense(expense);
@@ -56,10 +54,10 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
         isLoading: false
       }));
     } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to add expense', 
-        isLoading: false 
-      });
+      const errorMessage = error.response?.data?.message || 'Failed to add expense';
+      console.error('[Store] addExpense error:', errorMessage);
+      set({ error: errorMessage, isLoading: false });
+      throw error; // Re-throw to handle in the UI
     }
   },
 
@@ -72,10 +70,10 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
         isLoading: false
       }));
     } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to update expense', 
-        isLoading: false 
-      });
+      const errorMessage = error.response?.data?.message || 'Failed to update expense';
+      console.error('[Store] updateExpense error:', errorMessage);
+      set({ error: errorMessage, isLoading: false });
+      throw error;
     }
   },
 
@@ -88,10 +86,10 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
         isLoading: false
       }));
     } catch (error: any) {
-      set({ 
-        error: error.response?.data?.message || 'Failed to delete expense', 
-        isLoading: false 
-      });
+      const errorMessage = error.response?.data?.message || 'Failed to delete expense';
+      console.error('[Store] deleteExpense error:', errorMessage);
+      set({ error: errorMessage, isLoading: false });
+      throw error;
     }
   },
 

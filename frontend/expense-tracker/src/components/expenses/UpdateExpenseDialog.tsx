@@ -5,14 +5,16 @@ import { Label } from "@/components/common/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/common/select"
 import { useEffect, useState } from "react"
 import categories from './ExpenseTracker'
-import { Expense } from '@/types/expense'
+import { Expense, Category, ExpenseCreateUpdatePayload } from '@/types/expense'
 
 interface UpdateExpenseDialogProps {
   isOpen: boolean
   onOpenChange: (isOpen: boolean) => void
   expense: Expense | null
   onUpdateExpense: (expense: Expense) => void
-  categories: string[]
+  onClose: () => void
+  onSubmit: (id: number, expense: Omit<Expense, 'id'> & ExpenseCreateUpdatePayload) => Promise<void>
+  categories: Category[]
 }
 
 export function UpdateExpenseDialog({ isOpen, onOpenChange, expense, onUpdateExpense, categories }: UpdateExpenseDialogProps) {
@@ -56,16 +58,21 @@ export function UpdateExpenseDialog({ isOpen, onOpenChange, expense, onUpdateExp
               Category
             </Label>
             <Select
-              value={updatedExpense.category}
-              onValueChange={(value) => setUpdatedExpense({...updatedExpense, category: value})}
+              value={updatedExpense.category.name}
+              onValueChange={(value) => {
+                const selectedCategory = categories.find((category: Category) => category.name === value)
+                if (selectedCategory) {
+                  setUpdatedExpense({...updatedExpense, category: selectedCategory})
+                }
+              }}
             >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
                 {categories.slice(1).map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                  <SelectItem key={category.id} value={category.name}>
+                    {category.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -90,8 +97,8 @@ export function UpdateExpenseDialog({ isOpen, onOpenChange, expense, onUpdateExp
             <Input
               id="update-date"
               type="date"
-              value={updatedExpense.date}
-              onChange={(e) => setUpdatedExpense({...updatedExpense, date: e.target.value})}
+              value={updatedExpense.expense_date}
+              onChange={(e) => setUpdatedExpense({...updatedExpense, expense_date: e.target.value})}
               className="col-span-3"
             />
           </div>

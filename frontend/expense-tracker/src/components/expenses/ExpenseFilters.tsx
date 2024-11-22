@@ -1,85 +1,157 @@
+import { useCallback, useMemo } from 'react'
 import { Button } from "@/components/common/button"
 import { Input } from "@/components/common/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/common/select"
-import { Plus, Search, ArrowUpDown } from 'lucide-react'
-import categories from './ExpenseTracker'
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/common/select"
+import { Plus, Search, ArrowUpDown, SortAsc, SortDesc } from 'lucide-react'
+import { Category } from '@/types/expense'
+import { cn } from '@/lib/utils'
 
 interface ExpenseFiltersProps {
-  searchTerm: string
-  setSearchTerm: (term: string) => void
-  categoryFilter: string
-  setCategoryFilter: (category: string) => void
-  sortBy: 'date' | 'amount'
-  setSortBy: (sort: 'date' | 'amount') => void
-  sortOrder: 'asc' | 'desc'
-  setSortOrder: (order: 'asc' | 'desc') => void
-  setIsAddExpenseOpen: (isOpen: boolean) => void
-  categories : string[]
+  filters: {
+    searchTerm: string
+    categoryFilter: number | 'all'
+    sortBy: 'expense_date' | 'amount'
+    sortOrder: 'asc' | 'desc'
+  }
+  categories: Category[] | undefined
+  onSearchChange: (value: string) => void
+  onCategoryChange: (value: number | 'all') => void
+  onSortByChange: (value: 'expense_date' | 'amount') => void
+  onSortOrderChange: (value: 'asc' | 'desc') => void
+  onAddExpense: () => void
+  className?: string
 }
 
 export function ExpenseFilters({
-  searchTerm,
-  setSearchTerm,
-  categoryFilter,
-  setCategoryFilter,
-  sortBy,
-  setSortBy,
-  sortOrder,
-  setSortOrder,
-  setIsAddExpenseOpen,
-  categories
+  filters,
+  categories,
+  onSearchChange,
+  onCategoryChange,
+  onSortByChange,
+  onSortOrderChange,
+  onAddExpense,
+  className
 }: ExpenseFiltersProps) {
-  const allCategories = ['all', ...categories.map(c => c.toLowerCase())]
+  // Memoized derived data
+  const sortOptions = useMemo(() => [
+    { value: 'expense_date', label: 'Date' },
+    { value: 'amount', label: 'Amount' }
+  ] as const, [])
+
+  // Memoized event handlers
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearchChange(e.target.value)
+  }, [onSearchChange])
+
+  const handleCategoryChange = useCallback((value: string) => {
+    onCategoryChange(value === 'all' ? 'all' : parseInt(value))
+  }, [onCategoryChange])
+
+  const handleSortChange = useCallback((value: string) => {
+    onSortByChange(value as 'expense_date' | 'amount')
+  }, [onSortByChange])
+
+  const toggleSortOrder = useCallback(() => {
+    onSortOrderChange(filters.sortOrder === 'asc' ? 'desc' : 'asc')
+  }, [filters.sortOrder, onSortOrderChange])
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-      <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-        <div className="relative flex-grow md:flex-grow-0 md:w-64">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+    <div className={cn(
+      "grid gap-4 p-4 bg-background rounded-lg border",
+      "sm:flex sm:flex-wrap sm:items-center sm:justify-between",
+      className
+    )}>
+      {/* Search and Category Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 flex-grow">
+        {/* Search Input */}
+        <div className="relative flex-grow max-w-md">
+          <Search 
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" 
+            aria-hidden="true"
+          />
           <Input
-            type="text"
+            type="search"
             placeholder="Search expenses..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            value={filters.searchTerm}
+            onChange={handleSearchChange}
+            className="pl-9"
+            aria-label="Search expenses"
           />
         </div>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px]">
+
+        {/* Category Filter */}
+        <Select
+          value={String(filters.categoryFilter)}
+          onValueChange={handleCategoryChange}
+        >
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
-            {allCategories.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
+            <SelectItem value="all">All Categories</SelectItem>
+            {Array.isArray(categories) && categories.map((category: Category) => (
+              <SelectItem 
+                key={category.id} 
+                value={String(category.id)}
+              >
+                {category.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      <div className="flex items-center gap-2">
-        <Select value={sortBy} onValueChange={(value: 'date' | 'amount') => setSortBy(value)}>
-          <SelectTrigger className="w-[120px]">
+
+      {/* Sort Controls and Add Button */}
+      <div className="flex items-center gap-2 justify-end">
+        {/* Sort By */}
+        <Select
+          value={filters.sortBy}
+          onValueChange={handleSortChange}
+        >
+          <SelectTrigger className="w-[130px]">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="date">Date</SelectItem>
-            <SelectItem value="amount">Amount</SelectItem>
+            {sortOptions.map(option => (
+              <SelectItem 
+                key={option.value} 
+                value={option.value}
+              >
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
+
+        {/* Sort Order Toggle */}
         <Button
           variant="outline"
           size="icon"
-          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          aria-label={`Sort ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
+          onClick={toggleSortOrder}
+          aria-label={`Sort ${filters.sortOrder === 'asc' ? 'descending' : 'ascending'}`}
         >
-          <ArrowUpDown className={`h-4 w-4 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} />
+          {filters.sortOrder === 'asc' ? (
+            <SortAsc className="h-4 w-4" />
+          ) : (
+            <SortDesc className="h-4 w-4" />
+          )}
+        </Button>
+
+        {/* Add Expense Button */}
+        <Button 
+          onClick={onAddExpense}
+          className="whitespace-nowrap"
+        >
+          <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
+          Add Expense
         </Button>
       </div>
-      <Button onClick={() => setIsAddExpenseOpen(true)}>
-        <Plus className="w-4 h-4 mr-2" />
-        Add Expense
-      </Button>
     </div>
   )
 }

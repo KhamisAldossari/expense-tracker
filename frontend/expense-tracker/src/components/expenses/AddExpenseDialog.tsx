@@ -4,31 +4,36 @@ import { Input } from "@/components/common/input"
 import { Label } from "@/components/common/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/common/select"
 import { useState } from "react"
-import { Expense } from '@/types/expense'
+import { Expense, ExpenseCreateUpdatePayload } from '@/types/expense'
+import { Category } from '@/types/expense'
 
 interface AddExpenseDialogProps {
   isOpen: boolean
   onOpenChange: (isOpen: boolean) => void
   onAddExpense: (expense: Omit<Expense, 'id'>) => void
-  categories: string[]
+  onClose: () => void
+
+  onSubmit: (newExpense: Omit<Expense, 'id'> & ExpenseCreateUpdatePayload) => Promise<void>
+  categories: Category[]
 }
 
 export function AddExpenseDialog({ isOpen, onOpenChange, onAddExpense, categories }: AddExpenseDialogProps) {
   const [newExpense, setNewExpense] = useState<Omit<Expense, 'id'>>({
     description: '',
-    category: '',
+    category: {} as Category,
     amount: 0,
-    date: new Date().toISOString().split('T')[0],
+    expense_date: new Date().toISOString().split('T')[0],
+    created_at: new Date().toISOString(),
   })
 
   const handleAddExpense = () => {
-    if (newExpense.description && newExpense.category && newExpense.amount > 0) {
-      onAddExpense(newExpense)
+    if (newExpense.description && newExpense.category.name && newExpense.amount > 0) {
       setNewExpense({
         description: '',
-        category: '',
+        category: {} as Category,
         amount: 0,
-        date: new Date().toISOString().split('T')[0]
+        expense_date: new Date().toISOString().split('T')[0],
+        created_at: new Date().toISOString(),
       })
       onOpenChange(false)
     }
@@ -57,16 +62,21 @@ export function AddExpenseDialog({ isOpen, onOpenChange, onAddExpense, categorie
               Category
             </Label>
             <Select
-              value={newExpense.category}
-              onValueChange={(value) => setNewExpense({...newExpense, category: value})}
+              value={newExpense.category.name}
+              onValueChange={(value) => {
+                const selectedCategory = categories.find(category=> category.name === value)
+                if (selectedCategory) {
+                  setNewExpense({...newExpense, category: selectedCategory})
+                }
+              }}
             >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.slice(1).map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                {Array.isArray(categories) && categories.slice(1).map((category: Category) => (
+                  <SelectItem key={category.id} value={category.name}>
+                    {category.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -91,8 +101,8 @@ export function AddExpenseDialog({ isOpen, onOpenChange, onAddExpense, categorie
             <Input
               id="date"
               type="date"
-              value={newExpense.date}
-              onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
+              value={newExpense.expense_date}
+              onChange={(e) => setNewExpense({...newExpense, expense_date: e.target.value})}
               className="col-span-3"
             />
           </div>
