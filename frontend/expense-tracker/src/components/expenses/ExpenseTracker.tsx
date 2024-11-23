@@ -1,7 +1,6 @@
-// src/components/expenses/ExpenseTracker.tsx
 "use client"
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useExpenses } from '@/stores/useExpenses'
 import { Expense, ExpenseCreateUpdatePayload } from '@/types/expense'
 import { ExpenseDashboard } from './ExpenseDashboard'
@@ -28,11 +27,17 @@ export default function ExpenseTracker() {
     updateExpense,
     deleteExpense,
     isLoading,
-    error
+    error,
+    fetchExpenses // Add this function to refetch expenses
   } = useExpenses()
 
-  // Wrap categories in the expected format
-  const categoriesData = { data: categories }
+  // Local state for expenses to ensure re-render
+  const [localExpenses, setLocalExpenses] = useState(expenses)
+
+  // Effect to update local expenses when the expenses from the hook change
+  useEffect(() => {
+    setLocalExpenses(expenses)
+  }, [expenses])
 
   // Local state for dialogs
   const [dialogState, setDialogState] = useState<{
@@ -78,6 +83,7 @@ export default function ExpenseTracker() {
     try {
       await addExpense(newExpense)
       handleCloseAddDialog()
+      await fetchExpenses() // Refetch expenses after adding
       toast({
         title: "Success",
         description: "Expense added successfully",
@@ -90,12 +96,13 @@ export default function ExpenseTracker() {
         variant: "destructive"
       })
     }
-  }, [addExpense, toast])
+  }, [addExpense, fetchExpenses, toast])
 
   const handleUpdateExpense = useCallback(async (id: number, expense: Omit<Expense, 'id'>&ExpenseCreateUpdatePayload) => {
     try {
       await updateExpense(id, expense)
       handleCloseUpdateDialog()
+      await fetchExpenses() // Refetch expenses after updating
       toast({
         title: "Success",
         description: "Expense updated successfully",
@@ -108,13 +115,14 @@ export default function ExpenseTracker() {
         variant: "destructive"
       })
     }
-  }, [updateExpense, toast])
+  }, [updateExpense, fetchExpenses, toast])
 
   const handleDeleteExpense = useCallback(async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this expense?')) return
 
     try {
       await deleteExpense(id)
+      await fetchExpenses() // Refetch expenses after deleting
       toast({
         title: "Success",
         description: "Expense deleted successfully",
@@ -127,7 +135,13 @@ export default function ExpenseTracker() {
         variant: "destructive"
       })
     }
-  }, [deleteExpense, toast])
+  }, [deleteExpense, fetchExpenses, toast])
+
+  // Handler for category filter change
+  const handleCategoryFilterChange = useCallback(async (category: number | "all") => {
+      setCategoryFilter(category)
+      await fetchExpenses() // Refetch expenses after changing the filter
+    }, [setCategoryFilter, fetchExpenses])
 
   // Loading state
   if (isLoading) {
@@ -162,7 +176,7 @@ export default function ExpenseTracker() {
         categories={categories}
         isLoadingCategories={isLoading}
         onSearchChange={setSearchTerm}
-        onCategoryChange={setCategoryFilter}
+        onCategoryChange={handleCategoryFilterChange}
         onSortByChange={setSortBy}
         onSortOrderChange={setSortOrder}
         onAddExpense={handleOpenAddDialog}
@@ -170,7 +184,7 @@ export default function ExpenseTracker() {
 
       {/* Expense list */}
       <ExpenseList
-        expenses={expenses}
+        expenses={localExpenses}
         onUpdate={handleOpenUpdateDialog}
         onDelete={handleDeleteExpense}
       />
@@ -195,3 +209,4 @@ export default function ExpenseTracker() {
     </div>
   )
 }
+
