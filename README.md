@@ -23,7 +23,7 @@ Before you begin, ensure you have installed:
 - PHP >= 8.1
 - Composer
 - Node.js >= 16
-- Docker and Docker Compose
+- Docker
 - Git
 
 ## Installation
@@ -31,7 +31,7 @@ Before you begin, ensure you have installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/KhamisAldossari/expense-tracker
 cd expense-tracker
 ```
 
@@ -39,7 +39,7 @@ cd expense-tracker
 
 ```bash
 # Navigate to backend directory
-cd backend
+cd backend/expense-tracker
 
 # Install PHP dependencies
 composer install
@@ -55,42 +55,29 @@ DB_DATABASE=expense_tracker
 DB_USERNAME=your_username
 DB_PASSWORD=your_password
 
+
+# Pull and run MySQL container and configure the database using the credintials used previously
+docker pull mysql:8.0
+docker run --name mysql_expense_tracker -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=expense_tracker -e MYSQL_USER=<your_username> -e MYSQL_PASSWORD=<your_password> -p 3306:3306 -d mysql:8.0
+
 # Generate application key
 php artisan key:generate
 
-# Run database migrations and seeders
-php artisan migrate --seed
+# Run database migrations
+php artisan migrate
 
 # Start the Laravel development server
 php artisan serve
 ```
 
-### 3. Database Setup (MySQL with Docker)
-
-```bash
-# Start MySQL container
-docker-compose up -d
-
-# The MySQL service will be available at:
-# Host: localhost
-# Port: 3306
-# Database: expense_tracker
-```
-
-### 4. Frontend Setup (React + Vite)
+### 3. Frontend Setup (React + Vite)
 
 ```bash
 # Navigate to frontend directory
-cd frontend
+cd frontend/expense-tracker
 
 # Install dependencies
 npm install
-
-# Copy environment file
-cp .env.example .env
-
-# Configure your .env file:
-VITE_API_URL=http://localhost:8000/api
 
 # Start the development server
 npm run dev
@@ -116,21 +103,17 @@ The following API endpoints are available:
 
 ## Starting the Application
 
-1. Start the MySQL container:
-```bash
-docker-compose up -d
-```
-
+1. Start the MySQL container
 2. Start the Laravel backend server:
 ```bash
-cd backend
+cd backend/expense-tracker
 php artisan serve
 ```
 The backend will be available at `http://localhost:8000`
 
 3. Start the React frontend development server:
 ```bash
-cd frontend
+cd frontend/expense-tracker
 npm run dev
 ```
 The frontend will be available at `http://localhost:3000`
@@ -144,38 +127,6 @@ The frontend will be available at `http://localhost:3000`
 - Responsive Design
 - Real-time Updates
 
-## Development Scripts
-
-### Frontend
-```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Run TypeScript type checking
-npm run type-check
-```
-
-### Backend
-```bash
-# Run migrations
-php artisan migrate
-
-# Seed the database
-php artisan db:seed
-
-# Clear cache
-php artisan cache:clear
-
-# Generate API documentation
-php artisan l5-swagger:generate
-```
-
 
 ## Demo
 
@@ -183,44 +134,3 @@ Watch the demo video of the Expense Tracker Application:
 
 [![Expense Tracker Demo](https://img.youtube.com/vi/B28yi8MiVh8/0.jpg)](https://youtu.be/B28yi8MiVh8)
 
-
-## Project Structure
-
-```
-expense-tracker/
-├── backend/                # Laravel backend
-│   ├── app/
-│   ├── database/
-│   ├── routes/
-│   └── ...
-├── frontend/              # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── stores/
-│   │   └── types/
-│   └── ...
-└── README.md
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-- [Laravel](https://laravel.com/)
-- [React](https://reactjs.org/)
-- [Vite](https://vitejs.dev/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Shadcn/ui](https://ui.shadcn.com/)
