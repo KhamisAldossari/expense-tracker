@@ -5,11 +5,10 @@ import {
   Category, 
   ExpenseCreateUpdatePayload 
 } from '@/types/expense';
-import { mockExpenseService, mockCategoriesService } from './mockExpenseService';
 // Flag to switch between mock and real services
 const USE_MOCK = false ;
 
-export const expenseService = USE_MOCK ? mockExpenseService : {
+export const expenseService = {
   async getExpenses(): Promise<Expense[]> {
     try {
       console.log('[Expenses] Fetching expenses');
@@ -58,7 +57,7 @@ export const expenseService = USE_MOCK ? mockExpenseService : {
   }
 };
 
-export const categoriesService = USE_MOCK ? mockCategoriesService : {
+export const categoriesService = {
 
   async getCategories(): Promise<Category[]> {
     try {

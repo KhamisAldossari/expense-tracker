@@ -8,22 +8,29 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/common/select"
-import { Plus, Search, ArrowUpDown, SortAsc, SortDesc } from 'lucide-react'
+import { Skeleton } from "@/components/common/skeleton"
+import { Plus, Search, SortAsc, SortDesc } from 'lucide-react'
 import { Category } from '@/types/expense'
 import { cn } from '@/lib/utils'
+
+type SortByOption = 'expense_date' | 'amount'
+type SortOrder = 'asc' | 'desc'
 
 interface ExpenseFiltersProps {
   filters: {
     searchTerm: string
     categoryFilter: number | 'all'
-    sortBy: 'expense_date' | 'amount'
-    sortOrder: 'asc' | 'desc'
+    sortBy: SortByOption
+    sortOrder: SortOrder
   }
-  categories: Category[] | undefined
+  categories: {
+    data: Category[]
+  }
+  isLoadingCategories: boolean
   onSearchChange: (value: string) => void
   onCategoryChange: (value: number | 'all') => void
-  onSortByChange: (value: 'expense_date' | 'amount') => void
-  onSortOrderChange: (value: 'asc' | 'desc') => void
+  onSortByChange: (value: SortByOption) => void
+  onSortOrderChange: (value: SortOrder) => void
   onAddExpense: () => void
   className?: string
 }
@@ -31,6 +38,7 @@ interface ExpenseFiltersProps {
 export function ExpenseFilters({
   filters,
   categories,
+  isLoadingCategories,
   onSearchChange,
   onCategoryChange,
   onSortByChange,
@@ -38,13 +46,18 @@ export function ExpenseFilters({
   onAddExpense,
   className
 }: ExpenseFiltersProps) {
-  // Memoized derived data
+  const categoriesArray = useMemo(() => {
+    return categories.data?.map(category => ({
+      id: category.id,
+      name: category.name
+    })) || []
+  }, [categories])
+  
   const sortOptions = useMemo(() => [
     { value: 'expense_date', label: 'Date' },
     { value: 'amount', label: 'Amount' }
   ] as const, [])
 
-  // Memoized event handlers
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange(e.target.value)
   }, [onSearchChange])
@@ -67,9 +80,7 @@ export function ExpenseFilters({
       "sm:flex sm:flex-wrap sm:items-center sm:justify-between",
       className
     )}>
-      {/* Search and Category Filters */}
       <div className="flex flex-col sm:flex-row gap-4 flex-grow">
-        {/* Search Input */}
         <div className="relative flex-grow max-w-md">
           <Search 
             className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" 
@@ -85,31 +96,38 @@ export function ExpenseFilters({
           />
         </div>
 
-        {/* Category Filter */}
-        <Select
-          value={String(filters.categoryFilter)}
-          onValueChange={handleCategoryChange}
-        >
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {Array.isArray(categories) && categories.map((category: Category) => (
-              <SelectItem 
-                key={category.id} 
-                value={String(category.id)}
-              >
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isLoadingCategories ? (
+          <Skeleton className="h-10 w-[200px]" />
+        ) : (
+          <Select
+            value={String(filters.categoryFilter)}
+            onValueChange={handleCategoryChange}
+          >
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categoriesArray.length > 0 ? (
+                categoriesArray.map((category) => (
+                  <SelectItem 
+                    key={category.id}
+                    value={String(category.id)}
+                  >
+                    {category.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-categories" disabled>
+                  No categories available
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
-      {/* Sort Controls and Add Button */}
       <div className="flex items-center gap-2 justify-end">
-        {/* Sort By */}
         <Select
           value={filters.sortBy}
           onValueChange={handleSortChange}
@@ -129,7 +147,6 @@ export function ExpenseFilters({
           </SelectContent>
         </Select>
 
-        {/* Sort Order Toggle */}
         <Button
           variant="outline"
           size="icon"
@@ -143,7 +160,6 @@ export function ExpenseFilters({
           )}
         </Button>
 
-        {/* Add Expense Button */}
         <Button 
           onClick={onAddExpense}
           className="whitespace-nowrap"

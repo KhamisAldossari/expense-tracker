@@ -37,7 +37,12 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const categories = await categoriesService.getCategories() as Category[];
-      set({ categories, isLoading: false });
+      console.log('Raw category data from API:', categories)
+  
+      set({ 
+        categories: categories,
+        isLoading: false 
+      });
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Failed to fetch categories';
       console.error('[Store] fetchCategories error:', errorMessage);

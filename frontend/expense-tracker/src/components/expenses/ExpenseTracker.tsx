@@ -27,10 +27,12 @@ export default function ExpenseTracker() {
     addExpense,
     updateExpense,
     deleteExpense,
-    formatters,
     isLoading,
     error
   } = useExpenses()
+
+  // Wrap categories in the expected format
+  const categoriesData = { data: categories }
 
   // Local state for dialogs
   const [dialogState, setDialogState] = useState<{
@@ -151,13 +153,14 @@ export default function ExpenseTracker() {
     <div className="container mx-auto p-4 space-y-6">
       {/* Dashboard showing totals and charts */}
       <ExpenseDashboard
-      total={parseFloat(totals.total)}
+        total={totals.total}
       />
 
       {/* Filters and sorting */}
       <ExpenseFilters
         filters={filters}
         categories={categories}
+        isLoadingCategories={isLoading}
         onSearchChange={setSearchTerm}
         onCategoryChange={setCategoryFilter}
         onSortByChange={setSortBy}
@@ -179,7 +182,6 @@ export default function ExpenseTracker() {
         onSubmit={handleAddExpense}
         categories={categories}
         onOpenChange={handleOpenAddDialog}
-        onAddExpense={(expense) => handleAddExpense(expense as Omit<Expense, 'id'> & ExpenseCreateUpdatePayload)}
       />
 
       <UpdateExpenseDialog
@@ -188,10 +190,8 @@ export default function ExpenseTracker() {
         onClose={handleCloseUpdateDialog}
         onSubmit={handleUpdateExpense}
         categories={categories}
-        onUpdateExpense={expense => handleUpdateExpense(expense.id, { ...expense, category_id: expense.category.id } as Omit<Expense, 'id'> & ExpenseCreateUpdatePayload)}
         onOpenChange={handleCloseUpdateDialog}
       />
     </div>
   )
 }
-

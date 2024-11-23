@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useExpenseStore } from '@/stores/useExpenseStore'
-import { Expense, ExpenseCreateUpdatePayload, Category } from '@/types/expense'
+import { Expense, ExpenseCreateUpdatePayload } from '@/types/expense'
 
 interface ExpenseFilters {
   searchTerm: string
@@ -16,11 +16,23 @@ interface CategoryTotal {
   percentage: number
 }
 
+interface ExpenseFormatters {
+  date: (dateString: string) => string
+  amount: (amount: number) => string
+  percentage: (value: number) => string
+}
+
+interface FilterSetters {
+  setSearchTerm: (searchTerm: string) => void
+  setCategoryFilter: (categoryFilter: number | 'all') => void
+  setSortBy: (sortBy: 'expense_date' | 'amount') => void
+  setSortOrder: (sortOrder: 'asc' | 'desc') => void
+}
+
 export function useExpenses() {
-  // State from store
   const {
     expenses,
-    categories,
+    categories: categoriesResponse,
     addExpense: storeAddExpense,
     updateExpense: storeUpdateExpense,
     deleteExpense: storeDeleteExpense,
@@ -30,7 +42,13 @@ export function useExpenses() {
     error
   } = useExpenseStore()
 
-  // Local state for filters
+  console.log('Raw expenses from store:', expenses)
+  console.log('Categories from store:', categoriesResponse)
+
+  const categories = useMemo(() => {
+    return categoriesResponse || []
+  }, [categoriesResponse])
+
   const [filters, setFilters] = useState<ExpenseFilters>({
     searchTerm: '',
     categoryFilter: 'all',
@@ -38,7 +56,6 @@ export function useExpenses() {
     sortOrder: 'desc'
   })
 
-  // Data fetching
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -50,10 +67,18 @@ export function useExpenses() {
     fetchData()
   }, [fetchExpenses, fetchCategories])
 
-  // CRUD operations with proper error handling
-  const addExpense = useCallback(async (newExpense: Omit<Expense ,"id">&ExpenseCreateUpdatePayload) => {
+  const addExpense = useCallback(async (newExpense: Omit<Expense, "id"> & ExpenseCreateUpdatePayload) => {
+    console.log('Adding new expense:', newExpense)
+    
+    if (!newExpense.category_id || !newExpense.description || !newExpense.amount) {
+      throw new Error('Missing required expense fields')
+    }
+
     try {
-      await storeAddExpense(newExpense)
+      await storeAddExpense({
+        ...newExpense,
+        amount: Number(newExpense.amount) // Ensure amount is a number
+      })
     } catch (error) {
       console.error('[useExpenses] Failed to add expense:', error)
       throw error
@@ -61,8 +86,17 @@ export function useExpenses() {
   }, [storeAddExpense])
 
   const updateExpense = useCallback(async (id: number, updatedExpense: ExpenseCreateUpdatePayload) => {
+    console.log('Updating expense:', id, updatedExpense)
+    
+    if (!id || !updatedExpense.category_id) {
+      throw new Error('Invalid expense update payload')
+    }
+
     try {
-      await storeUpdateExpense(id, updatedExpense)
+      await storeUpdateExpense(id, {
+        ...updatedExpense,
+        amount: Number(updatedExpense.amount) // Ensure amount is a number
+      })
     } catch (error) {
       console.error('[useExpenses] Failed to update expense:', error)
       throw error
@@ -70,6 +104,12 @@ export function useExpenses() {
   }, [storeUpdateExpense])
 
   const deleteExpense = useCallback(async (id: number) => {
+    console.log('Deleting expense:', id)
+    
+    if (!id) {
+      throw new Error('Invalid expense ID')
+    }
+
     try {
       await storeDeleteExpense(id)
     } catch (error) {
@@ -78,47 +118,111 @@ export function useExpenses() {
     }
   }, [storeDeleteExpense])
 
-  // Filter helpers
   const matchesSearch = useCallback((expense: Expense, term: string): boolean => {
-    const searchLower = term.toLowerCase()
-    return expense.description.toLowerCase().includes(searchLower) ||
-           expense.category.name.toLowerCase().includes(searchLower)
+    if (!term) return true
+    if (!expense) return false
+
+    const searchLower = term.toLowerCase().trim()
+    
+    const descriptionMatch = expense.description ? 
+      expense.description.toLowerCase().includes(searchLower) : false
+    
+    const categoryMatch = expense.category?.name ? 
+      expense.category.name.toLowerCase().includes(searchLower) : false
+    
+    return descriptionMatch || categoryMatch
   }, [])
 
   const matchesCategory = useCallback((expense: Expense, filter: number | 'all'): boolean => {
-    return filter === 'all' || expense.category.id === filter
+    if (!expense?.category) return false
+    if (filter === 'all') return true
+    return expense.category.id === filter
   }, [])
 
-  // Sorting helper
   const compareExpenses = useCallback((a: Expense, b: Expense, sortBy: 'expense_date' | 'amount', sortOrder: 'asc' | 'desc'): number => {
     const multiplier = sortOrder === 'asc' ? 1 : -1
     
     if (sortBy === 'expense_date') {
-      return multiplier * (new Date(a.expense_date).getTime() - new Date(b.expense_date).getTime())
+      const dateA = new Date(a.expense_date).getTime()
+      const dateB = new Date(b.expense_date).getTime()
+      return multiplier * (dateA - dateB)
     }
     
-    const amountA = a.amount
-    const amountB = b.amount
+    const amountA = Number(a.amount)
+    const amountB = Number(b.amount)
     return multiplier * (amountA - amountB)
   }, [])
 
-  // Memoized filtered and sorted expenses
   const filteredAndSortedExpenses = useMemo(() => {
-    return [...expenses]
-      .filter(expense => 
-        matchesSearch(expense, filters.searchTerm) && 
-        matchesCategory(expense, filters.categoryFilter)
-      )
-      .sort((a, b) => compareExpenses(a, b, filters.sortBy, filters.sortOrder))
-  }, [expenses, filters, matchesSearch, matchesCategory, compareExpenses])
+    console.log('Filtering expenses:', expenses)
+    
+    if (!Array.isArray(expenses)) {
+      console.log('Expenses is not an array')
+      return []
+    }
 
-  // Memoized calculations
-  const totals = useMemo(() => {
-    const total = filteredAndSortedExpenses.reduce((sum, expense) => 
-      sum + expense.amount, 0
+    const filtered = expenses.filter(expense => {
+      if (!expense) {
+        console.log('Invalid expense object:', expense)
+        return false
+      }
+
+      const searchMatch = matchesSearch(expense, filters.searchTerm)
+      const categoryMatch = matchesCategory(expense, filters.categoryFilter)
+      
+      console.log('Expense filtering:', {
+        expense,
+        searchMatch,
+        categoryMatch
+      })
+
+      return searchMatch && categoryMatch
+    })
+
+    console.log('Filtered expenses:', filtered)
+
+    const sorted = filtered.sort((a, b) => 
+      compareExpenses(a, b, filters.sortBy, filters.sortOrder)
     )
 
-    const byCategory = filteredAndSortedExpenses.reduce((acc, expense) => {
+    console.log('Sorted expenses:', sorted)
+    return sorted
+  }, [expenses, filters, matchesSearch, matchesCategory, compareExpenses])
+
+  const totals = useMemo(() => {
+    console.log('Calculating totals for expenses:', filteredAndSortedExpenses)
+
+    if (!filteredAndSortedExpenses.length) {
+      return {
+        total: 0,
+        byCategory: []
+      }
+    }
+
+    const validExpenses = filteredAndSortedExpenses.filter(expense => {
+      const amount = Number(expense.amount)
+      const isValid = !isNaN(amount) && expense.category
+      
+      console.log('Validating expense:', {
+        expense,
+        amount,
+        isValid
+      })
+
+      return isValid
+    })
+
+    console.log('Valid expenses for totals:', validExpenses)
+
+    const total = validExpenses.reduce((sum, expense) => {
+      const amount = Number(expense.amount)
+      console.log('Adding to total:', { current: sum, adding: amount })
+      return sum + amount
+    }, 0)
+
+    console.log('Calculated total:', total)
+
+    const byCategory = validExpenses.reduce((acc, expense) => {
       const { id, name } = expense.category
       if (!acc[id]) {
         acc[id] = { 
@@ -128,24 +232,31 @@ export function useExpenses() {
           percentage: 0
         }
       }
-      acc[id].total += expense.amount
+      
+      const amount = Number(expense.amount)
+      acc[id].total += amount
+      
+      console.log(`Category ${name} running total:`, acc[id].total)
+      
       return acc
     }, {} as Record<number, CategoryTotal>)
 
     // Calculate percentages
     Object.values(byCategory).forEach(category => {
-      category.percentage = (category.total / total) * 100
+      category.percentage = total > 0 ? (category.total / total) * 100 : 0
     })
 
-    return {
-      total: total.toFixed(2),
+    const result = {
+      total: Number(total.toFixed(2)),
       byCategory: Object.values(byCategory)
-        .sort((a, b) => b.total - a.total) // Sort by total descending
+        .sort((a, b) => b.total - a.total)
     }
+
+    console.log('Final totals:', result)
+    return result
   }, [filteredAndSortedExpenses])
 
-  // Utility functions
-  const formatters = useMemo(() => ({
+  const formatters: ExpenseFormatters = useMemo(() => ({
     date: (dateString: string) => new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -160,8 +271,7 @@ export function useExpenses() {
     percentage: (value: number) => `${value.toFixed(1)}%`
   }), [])
 
-  // Filter setters
-  const filterSetters = useMemo(() => ({
+  const filterSetters: FilterSetters = useMemo(() => ({
     setSearchTerm: (searchTerm: string) => 
       setFilters(prev => ({ ...prev, searchTerm })),
     
@@ -176,25 +286,16 @@ export function useExpenses() {
   }), [])
 
   return {
-    // Data
     expenses: filteredAndSortedExpenses,
     categories,
     totals,
-    
-    // Actions
     addExpense,
     updateExpense,
     deleteExpense,
-    
-    // Filters
     filters,
     ...filterSetters,
-    
-    // Status
     isLoading,
     error,
-    
-    // Utilities
     formatters
   }
 }

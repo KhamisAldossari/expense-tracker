@@ -2,6 +2,7 @@ import { useState } from "react";
 import { signUpService } from "@/services/authService";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { SignUpPayload } from "@/types/auth";
 import useAuthStore from "@/stores/authStore";
 
 const SignUp: React.FC = () => {
@@ -51,11 +52,12 @@ const SignUp: React.FC = () => {
     setError(null);
     
     try {
-      const response = await signUpService(
-        formData.name,
-        formData.email,
-        formData.password
-      );
+      const response = await signUpService({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.password_confirmation
+      });
       
       setSuccessMessage("Sign up successful! Redirecting to expenses...");
       setAuth(response);
