@@ -2,7 +2,6 @@ import { useState } from "react";
 import { signUpService } from "@/services/authService";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
-import { SignUpPayload } from "@/types/auth";
 import useAuthStore from "@/stores/authStore";
 
 const SignUp: React.FC = () => {
