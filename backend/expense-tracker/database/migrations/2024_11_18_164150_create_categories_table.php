@@ -16,6 +16,19 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
+    
+        // Default categories
+        $categories = [
+            ['name' => 'Food'],
+            ['name' => 'Transportation'],
+            ['name' => 'Entertainment'],
+            ['name' => 'Shopping'],
+            ['name' => 'Bills'],
+            ['name' => 'Healthcare'],
+            ['name' => 'Other']
+        ];
+    
+        DB::table('categories')->insert($categories);
     }
 
     /**
