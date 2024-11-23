@@ -58,16 +58,15 @@ export const expenseService = {
 };
 
 export const categoriesService = {
-
   async getCategories(): Promise<Category[]> {
     try {
-      console.log('[Categories] Fetching categories');
-      const { data } = await axiosInstance.get<Category[]>('/categories');
-      console.log('[Categories] Successfully fetched categories:', data);
-      return data;
+      console.log('[Categories] Fetching categories')
+      const response = await axiosInstance.get<Category[]>('/categories')
+      console.log('[Categories] Successfully fetched categories:', response.data)
+      return response.data
     } catch (error) {
-      console.error('[Categories] Failed to fetch categories:', error);
-      throw error;
+      console.error('[Categories] Failed to fetch categories:', error)
+      throw error
     }
   }
 }

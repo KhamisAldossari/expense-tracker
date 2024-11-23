@@ -13,7 +13,6 @@ import { LoadingSpinner } from '@/components/common/loading-spinner'
 import { useToast } from '@/components/common/use-toast'
 
 export default function ExpenseTracker() {
-  // Custom hook for expense management
   const {
     expenses,
     categories,
@@ -28,18 +27,15 @@ export default function ExpenseTracker() {
     deleteExpense,
     isLoading,
     error,
-    fetchExpenses // Add this function to refetch expenses
+    fetchExpenses
   } = useExpenses()
 
-  // Local state for expenses to ensure re-render
   const [localExpenses, setLocalExpenses] = useState(expenses)
 
-  // Effect to update local expenses when the expenses from the hook change
   useEffect(() => {
     setLocalExpenses(expenses)
   }, [expenses])
 
-  // Local state for dialogs
   const [dialogState, setDialogState] = useState<{
     isAddOpen: boolean
     isUpdateOpen: boolean
@@ -98,7 +94,7 @@ export default function ExpenseTracker() {
     }
   }, [addExpense, fetchExpenses, toast])
 
-  const handleUpdateExpense = useCallback(async (id: number, expense: Omit<Expense, 'id'>&ExpenseCreateUpdatePayload) => {
+  const handleUpdateExpense = useCallback(async (id: number, expense: ExpenseCreateUpdatePayload) => {
     try {
       await updateExpense(id, expense)
       handleCloseUpdateDialog()

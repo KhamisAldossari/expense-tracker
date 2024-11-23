@@ -12,9 +12,7 @@ interface AddExpenseDialogProps {
   onOpenChange: (isOpen: boolean) => void
   onClose: () => void
   onSubmit: (newExpense: Omit<Expense, 'id'> & ExpenseCreateUpdatePayload) => Promise<void>
-  categories: {
-    data: Category[]
-  }
+  categories:Category[] | []
 }
 
 export function AddExpenseDialog({ 
@@ -37,9 +35,7 @@ export function AddExpenseDialog({
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const categoriesArray = categories?.data || []
 
-  // Reset form when dialog opens/closes
   useEffect(() => {
     if (!isOpen) {
       setNewExpense(getInitialState())
@@ -138,7 +134,7 @@ export function AddExpenseDialog({
               value={newExpense.category?.id?.toString() || ''}
               onValueChange={(value) => {
                 setError(null)
-                const selectedCategory = categoriesArray.find(cat => cat.id.toString() === value)
+                const selectedCategory = categories.find(cat => cat.id.toString() === value)
                 setNewExpense(prev => ({
                   ...prev,
                   category: selectedCategory || null
@@ -150,8 +146,8 @@ export function AddExpenseDialog({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categoriesArray.length > 0 ? (
-                  categoriesArray.map((category) => (
+                {categories.length > 0 ? (
+                  categories.map((category) => (
                     <SelectItem 
                       key={category.id}
                       value={category.id.toString()}

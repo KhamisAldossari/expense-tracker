@@ -292,6 +292,8 @@ export function useExpenses() {
     addExpense,
     updateExpense,
     deleteExpense,
+    fetchExpenses,    
+    fetchCategories, 
     filters,
     ...filterSetters,
     isLoading,

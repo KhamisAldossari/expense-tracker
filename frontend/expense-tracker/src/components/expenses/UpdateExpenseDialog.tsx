@@ -11,10 +11,8 @@ interface UpdateExpenseDialogProps {
   onOpenChange: (isOpen: boolean) => void
   expense: Expense | null
   onClose: () => void
-  onSubmit: (id: number, expense: Omit<Expense, 'id'> & ExpenseCreateUpdatePayload) => Promise<void>
-  categories: {
-    data: Category[]
-  }
+  onSubmit: (id: number, expense: ExpenseCreateUpdatePayload) => Promise<void>
+  categories: Category[]
 }
 
 export function UpdateExpenseDialog({ 
@@ -28,8 +26,6 @@ export function UpdateExpenseDialog({
   const [updatedExpense, setUpdatedExpense] = useState<Expense | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const categoriesArray = categories?.data || []
 
   useEffect(() => {
     if (expense) {
@@ -56,7 +52,8 @@ export function UpdateExpenseDialog({
       setError('Please select a category.')
       return false
     }
-    if (!updatedExpense.amount || updatedExpense.amount <= 0) {
+    const amount = Number(updatedExpense.amount)
+    if (!amount || amount <= 0 || isNaN(amount)) {
       setError('Please enter a valid amount.')
       return false
     }
@@ -74,18 +71,20 @@ export function UpdateExpenseDialog({
     setError(null)
 
     try {
-      await onSubmit(updatedExpense.id, {
+      // Only send the required fields in the update payload
+      const updatePayload: ExpenseCreateUpdatePayload = {
         description: updatedExpense.description.trim(),
         category_id: updatedExpense.category.id,
-        category: updatedExpense.category,
         amount: Number(updatedExpense.amount),
-        expense_date: updatedExpense.expense_date,
-        created_at: updatedExpense.created_at
-      })
+        expense_date: updatedExpense.expense_date
+      }
+
+      console.log('Updating expense with payload:', updatePayload)
+      await onSubmit(updatedExpense.id, updatePayload)
       handleClose()
     } catch (error) {
+      console.error('Failed to update expense:', error)
       setError('Failed to update expense. Please try again.')
-    } finally {
       setIsSubmitting(false)
     }
   }
@@ -114,7 +113,7 @@ export function UpdateExpenseDialog({
               value={updatedExpense.description}
               onChange={(e) => {
                 setError(null)
-                setUpdatedExpense({...updatedExpense, description: e.target.value})
+                setUpdatedExpense(prev => prev ? {...prev, description: e.target.value} : null)
               }}
               className="col-span-3"
               placeholder="Enter expense description"
@@ -126,12 +125,12 @@ export function UpdateExpenseDialog({
               Category
             </Label>
             <Select
-              value={updatedExpense.category?.name || ''}
+              value={String(updatedExpense.category?.id)}
               onValueChange={(value) => {
                 setError(null)
-                const selectedCategory = categoriesArray.find(category => category.name === value)
-                if (selectedCategory) {
-                  setUpdatedExpense({...updatedExpense, category: selectedCategory})
+                const selectedCategory = categories.find(cat => String(cat.id) === value)
+                if (selectedCategory && updatedExpense) {
+                  setUpdatedExpense(prev => prev ? {...prev, category: selectedCategory} : null)
                 }
               }}
               disabled={isSubmitting}
@@ -140,20 +139,14 @@ export function UpdateExpenseDialog({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categoriesArray.length > 0 ? (
-                  categoriesArray.map((category) => (
-                    <SelectItem 
-                      key={category.id} 
-                      value={category.name}
-                    >
-                      {category.name}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-categories" disabled>
-                    No categories available
+                {categories.map((category) => (
+                  <SelectItem 
+                    key={category.id} 
+                    value={String(category.id)}
+                  >
+                    {category.name}
                   </SelectItem>
-                )}
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -164,10 +157,14 @@ export function UpdateExpenseDialog({
             <Input
               id="update-amount"
               type="number"
-              value={updatedExpense.amount || ''}
+              value={updatedExpense.amount}
               onChange={(e) => {
                 setError(null)
-                setUpdatedExpense({...updatedExpense, amount: parseFloat(e.target.value) || 0})
+                const value = e.target.value
+                setUpdatedExpense(prev => prev ? {
+                  ...prev, 
+                  amount: value === '' ? 0 : parseFloat(value)
+                } : null)
               }}
               className="col-span-3"
               placeholder="0.00"
@@ -186,7 +183,7 @@ export function UpdateExpenseDialog({
               value={updatedExpense.expense_date}
               onChange={(e) => {
                 setError(null)
-                setUpdatedExpense({...updatedExpense, expense_date: e.target.value})
+                setUpdatedExpense(prev => prev ? {...prev, expense_date: e.target.value} : null)
               }}
               className="col-span-3"
               max={new Date().toISOString().split('T')[0]}

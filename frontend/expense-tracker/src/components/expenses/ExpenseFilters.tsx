@@ -23,9 +23,7 @@ interface ExpenseFiltersProps {
     sortBy: SortByOption
     sortOrder: SortOrder
   }
-  categories: {
-    data: Category[]
-  }
+  categories: Category[]
   isLoadingCategories: boolean
   onSearchChange: (value: string) => void
   onCategoryChange: (value: number | 'all') => void
@@ -46,13 +44,7 @@ export function ExpenseFilters({
   onAddExpense,
   className
 }: ExpenseFiltersProps) {
-  const categoriesArray = useMemo(() => {
-    return categories.data?.map(category => ({
-      id: category.id,
-      name: category.name
-    })) || []
-  }, [categories])
-  
+
   const sortOptions = useMemo(() => [
     { value: 'expense_date', label: 'Date' },
     { value: 'amount', label: 'Amount' }
@@ -108,8 +100,8 @@ export function ExpenseFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {categoriesArray.length > 0 ? (
-                categoriesArray.map((category) => (
+              {categories.length > 0 ? (
+                categories.map((category) => (
                   <SelectItem 
                     key={category.id}
                     value={String(category.id)}
