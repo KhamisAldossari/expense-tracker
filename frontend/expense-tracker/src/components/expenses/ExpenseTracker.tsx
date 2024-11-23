@@ -114,8 +114,6 @@ export default function ExpenseTracker() {
   }, [updateExpense, fetchExpenses, toast])
 
   const handleDeleteExpense = useCallback(async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this expense?')) return
-
     try {
       await deleteExpense(id)
       await fetchExpenses() // Refetch expenses after deleting
