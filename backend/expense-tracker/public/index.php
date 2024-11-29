@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// For loading .env
+// Load environment variables
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
@@ -10,17 +10,16 @@ header('Content-Type: application/json');
 
 use App\Core\Request;
 use App\Core\Router;
+use App\Controllers\AuthController; 
 use App\Controllers\CategoryController;
 
 $request = new Request();
 $router = new Router();
 
-// Test route
-$router->addRoute('GET', '/api/test', function() {
-    return ['message' => 'API is working!'];
-});
 
-// Category routes
+$router->addRoute('POST', '/api/register', [AuthController::class, 'register']);
+$router->addRoute('POST', '/api/login', [AuthController::class, 'login']);
+
 $router->addRoute('GET', '/api/categories', [CategoryController::class, 'index']);
 $router->addRoute('POST', '/api/categories', [CategoryController::class, 'store']);
 $router->addRoute('DELETE', '/api/categories/{id}', [CategoryController::class, 'destroy']);
