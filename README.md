@@ -58,7 +58,7 @@ DB_PASSWORD=your_password
 
 # Pull and run MySQL container and configure the database using the credintials used previously
 docker pull mysql:8.0
-docker run --name mysql_expense_tracker -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=expense_tracker -e MYSQL_USER=<your_username> -e MYSQL_PASSWORD=<your_password> -p 3306:3306 -d mysql:8.0
+docker run --name mysql_expense_tracker -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=expense_tracker -e MYSQL_USER=admin -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:8.0
 
 # Generate application key
 php artisan key:generate
