@@ -10,7 +10,7 @@ class Database {
     
     public static function getInstance(): PDO {
         if (self::$instance === null) {
-            $config = require __DIR__ . '/../Config/database.php';
+            $config = require __DIR__ . '/../config/database.php';
             
             
             $dsn = sprintf(
@@ -34,7 +34,7 @@ class Database {
                     ]
                 );
             } catch (PDOException $e) {
-                throw new PDOException($e->getMessage());
+                throw new PDOException("Connection failed: " . $e->getMessage());
             }
         }
         
