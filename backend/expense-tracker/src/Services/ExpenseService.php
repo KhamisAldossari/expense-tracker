@@ -7,21 +7,27 @@ use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 class ExpenseService 
 {
     private ExpenseRepositoryInterface $expenseRepository;
+    private LoggingService $loggingService;
     
     public function __construct(ExpenseRepositoryInterface $expenseRepository) 
     {
         $this->expenseRepository = $expenseRepository;
+        $this->loggingService = new LoggingService();
     }
     
     public function getAllExpenses(array $filters): array 
     {
-        return $this->expenseRepository->all($filters);
+        $expenses = $this->expenseRepository->all($filters);
+        $this->loggingService->logExpenseActivity('list', ['filters' => $filters]);
+        return $expenses;
     }
     
     public function createExpense(array $data, array $user): array 
     {
         $data['user_id'] = $user['id'];
-        return $this->expenseRepository->create($data);
+        $expense = $this->expenseRepository->create($data);
+        $this->loggingService->logExpenseActivity('create', $expense);
+        return $expense;
     }
     
     public function getExpense(int $id, array $user): array 
@@ -32,6 +38,7 @@ class ExpenseService
             throw new \Exception('Expense not found');
         }
         
+        $this->loggingService->logExpenseActivity('view', $expense);
         return $expense;
     }
     
@@ -41,11 +48,14 @@ class ExpenseService
             throw new \Exception('Expense not found');
         }
         
+        $oldData = $this->expenseRepository->find($id);
         $expense = $this->expenseRepository->update($data, $id);
+        
         if (!$expense) {
             throw new \Exception('Failed to update expense');
         }
         
+        $this->loggingService->logExpenseActivity('update', $expense, $oldData);
         return $expense;
     }
     
@@ -55,8 +65,12 @@ class ExpenseService
             throw new \Exception('Expense not found');
         }
         
+        $expense = $this->expenseRepository->find($id);
+        
         if (!$this->expenseRepository->delete($id)) {
             throw new \Exception('Failed to delete expense');
         }
+        
+        $this->loggingService->logExpenseActivity('delete', $expense);
     }
 }
