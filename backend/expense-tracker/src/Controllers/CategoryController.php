@@ -27,13 +27,17 @@ class CategoryController
     {
         $data = $request->getBody();
         
-        if (empty($data['name'])) {
+        $validData = [
+            'name' => $data['name'] ?? null
+        ];
+        
+        if (empty($validData['name'])) {
             http_response_code(422);
             return ['error' => 'Name is required'];
         }
         
         try {
-            $category = $this->categoryService->createCategory($data);
+            $category = $this->categoryService->createCategory($validData);
             http_response_code(201);
             return ['data' => $category];
         } catch (\Exception $e) {

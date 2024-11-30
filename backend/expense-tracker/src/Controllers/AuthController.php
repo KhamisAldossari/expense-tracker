@@ -20,28 +20,34 @@ class AuthController
         $data = $request->getBody();
         
 
-        if (empty($data['name']) || empty($data['email']) || empty($data['password'])) {
+        $validData = [
+            'name' => $data['name'] ?? null,
+            'email' => $data['email'] ?? null,
+            'password' => $data['password'] ?? null
+        ];
+        
+        if (empty($validData['name']) || empty($validData['email']) || empty($validData['password'])) {
             http_response_code(422);
             return ['error' => 'Name, email and password are required'];
         }
         
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($validData['email'], FILTER_VALIDATE_EMAIL)) {
             http_response_code(422);
             return ['error' => 'Invalid email format'];
         }
         
-        if (strlen($data['password']) < 8) {
+        if (strlen($validData['password']) < 8) {
             http_response_code(422);
             return ['error' => 'Password must be at least 8 characters'];
         }
         
         try {
-            $user = $this->authService->register($data);
+            $user = $this->authService->register($validData);
             $token = JWT::encode([
                 'sub' => $user['id'],
                 'email' => $user['email'],
                 'iat' => time(),
-                'exp' => time() + (60 * 60 * 24) // 24 hours
+                'exp' => time() + (60 * 60 * 24)
             ]);
             
             http_response_code(201);
@@ -59,18 +65,23 @@ class AuthController
     {
         $data = $request->getBody();
         
-        if (empty($data['email']) || empty($data['password'])) {
+        $validData = [
+            'email' => $data['email'] ?? null,
+            'password' => $data['password'] ?? null
+        ];
+        
+        if (empty($validData['email']) || empty($validData['password'])) {
             http_response_code(422);
             return ['error' => 'Email and password are required'];
         }
         
         try {
-            $user = $this->authService->login($data['email'], $data['password']);
+            $user = $this->authService->login($validData['email'], $validData['password']);
             $token = JWT::encode([
                 'sub' => $user['id'],
                 'email' => $user['email'],
                 'iat' => time(),
-                'exp' => time() + (60 * 60 * 24) // 24 hours
+                'exp' => time() + (60 * 60 * 24)
             ]);
             
             return [

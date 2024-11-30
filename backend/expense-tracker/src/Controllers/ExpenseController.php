@@ -19,26 +19,33 @@ class ExpenseController
     public function index(Request $request): array 
     {
         $user = $request->user();
-        $expenses = $this->expenseService->getAllExpenses(['user_id' => $user['id']]);
-        
-        return ['data' => $expenses];
+        $filters = ['user_id' => $user['id']];
+        return [
+            'data' => $this->expenseService->getAllExpenses($filters)
+        ];
     }
     
     public function store(Request $request): array 
     {
         $data = $request->getBody();
         
-        // Validation
+        $validData = [
+            'category_id' => $data['category_id'] ?? null,
+            'amount' => $data['amount'] ?? null,
+            'description' => $data['description'] ?? null,
+            'expense_date' => $data['expense_date'] ?? null
+        ];
+        
         $required = ['category_id', 'amount', 'description', 'expense_date'];
         foreach ($required as $field) {
-            if (empty($data[$field])) {
+            if (empty($validData[$field])) {
                 http_response_code(422);
-                return ['error' => ucfirst($field) . ' is required'];
+                return ['error' => ucfirst(str_replace('_', ' ', $field)) . ' is required'];
             }
         }
         
         try {
-            $expense = $this->expenseService->createExpense($data, $request->user());
+            $expense = $this->expenseService->createExpense($validData, $request->user());
             http_response_code(201);
             return ['data' => $expense];
         } catch (\Exception $e) {
@@ -77,13 +84,20 @@ class ExpenseController
             return ['error' => 'ID is required'];
         }
         
-        if (empty($data)) {
+        $validData = array_intersect_key($data, array_flip([
+            'category_id',
+            'amount',
+            'description',
+            'expense_date'
+        ]));
+        
+        if (empty($validData)) {
             http_response_code(422);
-            return ['error' => 'No data provided for update'];
+            return ['error' => 'No valid fields provided for update'];
         }
         
         try {
-            $expense = $this->expenseService->updateExpense($data, (int)$id, $request->user());
+            $expense = $this->expenseService->updateExpense($validData, (int)$id, $request->user());
             return ['data' => $expense];
         } catch (\Exception $e) {
             http_response_code(404);
