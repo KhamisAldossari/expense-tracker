@@ -2,14 +2,16 @@
 
 2- At the root of the project `composer install` to install dependencies
 
-3- Pull and run the docker image of mysql in the same manner.
+3- Create .env from .env.example and fill it (do not forget to `source .env` after finishing)
+
+4- After pulling it, run the docker image of mysql alongside creating the database (using the information in .env)
     
-`sudo docker run --name mysql_expense_tracker2 -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=expense_tracker-e MYSQL_USER=admin -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:8.0`
+`sudo docker run --name mysql_expense_tracker2 -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=expense_tracker -e MYSQL_USER=admin -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:8.0`
 
-5- Create the tables and their predefined values:
+5- Migrate at the root folder of the project
+
+`php migrate.php migrate`
+
+NOTE: `php migrate.php rollback` to rollback last batch
     
-` sudo docker exec -i mysql_expense_tracker2 mysql -u root -prootpassword < database/schema.sql`
-
-6- Migrations?
-
-7- Start the applciation via `php -S localhost:8000 -t public`
+6- Start the applciation via `php -S localhost:8000 -t public`

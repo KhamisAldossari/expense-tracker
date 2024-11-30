@@ -2,7 +2,8 @@
     "name": "expense-tracker/api",
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "App\\": "src/",
+            "Database\\": "database/"
         }
     },
     "require": {
