@@ -1,0 +1,15 @@
+1- Clone the project
+
+2- At the root of the project `composer install` to install dependencies
+
+3- Pull and run the docker image of mysql in the same manner.
+    
+`sudo docker run --name mysql_expense_tracker2 -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=expense_tracker-e MYSQL_USER=admin -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:8.0`
+
+5- Create the tables and their predefined values:
+    
+` sudo docker exec -i mysql_expense_tracker2 mysql -u root -prootpassword < database/schema.sql`
+
+6- Migrations?
+
+7- Start the applciation via `php -S localhost:8000 -t public`

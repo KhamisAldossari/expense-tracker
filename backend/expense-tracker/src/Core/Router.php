@@ -6,6 +6,10 @@ class Router {
     private array $routes = [];
     private array $middlewares = [];
 
+    public function addMiddleware(string $path, string $middleware): void {
+        $this->middlewares[$path] = $middleware;
+    }
+
     public function addRoute(string $method, string $path, callable|array $handler): void {
         $this->routes[] = [
             'method' => $method,
@@ -22,6 +26,16 @@ class Router {
     public function dispatch(Request $request): mixed {
         $method = $request->getMethod();
         $path = $request->getPath();
+
+        foreach ($this->middlewares as $protectedPath => $middleware) {
+            if (str_starts_with($path, $protectedPath)) {
+                $middlewareClass = new $middleware();
+                $middlewareResult = $middlewareClass->handle($request);
+                if ($middlewareResult !== null) {
+                    return $middlewareResult;
+                }
+            }
+        }
 
         foreach ($this->routes as $route) {
             if ($route['method'] !== $method) {

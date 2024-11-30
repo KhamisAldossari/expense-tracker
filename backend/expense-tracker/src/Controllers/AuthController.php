@@ -82,4 +82,10 @@ class AuthController
             return ['error' => $e->getMessage()];
         }
     }
+    
+    // For consistency I have added this endpoint, however, no action is needed from the server side since we are using jwt
+    public function logout(Request $request): array 
+    {
+        return ['message' => 'Successfully logged out'];
+    }
 }

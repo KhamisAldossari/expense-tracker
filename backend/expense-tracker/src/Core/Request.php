@@ -10,11 +10,13 @@ class Request {
     private string $method;
     private string $path;
 
+    private ?array $user = null;
+
     public function __construct() {
         $this->params = [];
         $this->query = $_GET ?? [];
         $this->body = $this->getRequestBody();
-        $this->headers = $this->getHeaders();
+        $this->headers = $this->parseHeaders();
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     }
@@ -24,7 +26,7 @@ class Request {
         return json_decode($body, true) ?? [];
     }
 
-    private function getHeaders(): array {
+    private function parseHeaders(): array {
         $headers = [];
         foreach ($_SERVER as $key => $value) {
             if (strpos($key, 'HTTP_') === 0) {
@@ -56,5 +58,19 @@ class Request {
 
     public function getParams(): array {
         return $this->params;
+    }
+    // Add this public method to your Request class
+    public function getHeaders(): array {
+    return $this->headers;
+    }
+
+    public function setUser(array $user): void 
+    {
+        $this->user = $user;
+    }
+
+    public function user(): ?array 
+    {
+        return $this->user;
     }
 }
