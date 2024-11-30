@@ -1,157 +1,192 @@
 // lib/screens/auth/login_screen.dart
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
-import './register_screen.dart';
-import '../home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../providers/providers.dart';
+import '../../widgets/testimonials.dart';
+import '../../widgets/footer.dart';
 
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
+class LoginScreen extends ConsumerWidget {
+  LoginScreen({super.key});
 
-class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
-
-  void _handleLogin() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final success = await context.read<AuthProvider>().login(
-        _emailController.text,
-        _passwordController.text,
-      );
-
-      if (success && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomeScreen()),
-
-        );
-      }
-    }
-  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    
     return Scaffold(
-      body: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          if (auth.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: 300,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue.shade700, Colors.blue.shade900],
+                ),
+              ),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.account_balance_wallet, size: 80, color: Colors.white),
+                    SizedBox(height: 16),
+                    Text(
+                      'Welcome to Expense Tracker',
+                      style: TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Manage your finances with ease',
+                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            Padding(
+              padding: const EdgeInsets.all(24),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 60),
-                    Text(
-                      'Welcome Back!',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 40),
-                    if (auth.error != null)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.only(bottom: 20),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          auth.error!,
-                          style: TextStyle(color: Colors.red.shade900),
-                        ),
-                      ),
                     TextFormField(
                       controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email',
-                        prefixIcon: const Icon(Icons.email),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        prefixIcon: Icon(Icons.email),
                       ),
                       validator: (value) {
                         if (value?.isEmpty ?? true) return 'Email is required';
-                        if (!value!.contains('@')) return 'Invalid email format';
+                        if (!value!.contains('@')) return 'Invalid email';
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: !_isPasswordVisible,
-                      decoration: InputDecoration(
+                      obscureText: true,
+                      decoration: const InputDecoration(
                         labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        prefixIcon: Icon(Icons.lock),
                       ),
                       validator: (value) {
                         if (value?.isEmpty ?? true) return 'Password is required';
-                        if (value!.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
+                        if (value!.length < 8) return 'Password too short';
                         return null;
                       },
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: authState.isLoading ? null : () async {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            await ref.read(authProvider.notifier).login(
+                              _emailController.text,
+                              _passwordController.text,
+                            );
+                            if (!ref.read(authProvider).hasError) {
+                              context.go('/home');
+                            }
+                          }
+                        },
+                        child: authState.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(color: Colors.white),
+                            )
+                          : const Text('Login'),
+                      ),
+                    ),
+                    if (authState.hasError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                          authState.error.toString(),
+                          style: TextStyle(color: Colors.red.shade700),
                         ),
                       ),
-                      child: const Text('Login'),
-                    ),
-                    const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => RegisterScreen()),
-                        );
-                      },
-                      child: const Text('Don\'t have an account? Sign up'),
+                      onPressed: () => context.go('/register'),
+                      child: const Text('Don\'t have an account? Register'),
                     ),
                   ],
                 ),
               ),
             ),
-          );
-        },
+
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              child: _Features(),
+            ),
+
+            const Testimonials(),
+            const Footer(),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _Features extends StatelessWidget {
+  const _Features();
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _FeatureItem(
+          icon: Icons.track_changes,
+          title: 'Track Expenses',
+          description: 'Monitor your spending',
+        ),
+        _FeatureItem(
+          icon: Icons.category,
+          title: 'Categories',
+          description: 'Organize expenses',
+        ),
+        _FeatureItem(
+          icon: Icons.analytics,
+          title: 'Analytics',
+          description: 'Visualize your data',
+        ),
+      ],
+    );
+  }
+}
+
+class _FeatureItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _FeatureItem({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, size: 40, color: Colors.blue),
+        const SizedBox(height: 8),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(
+          description,
+          style: const TextStyle(fontSize: 12),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
   }
 }
