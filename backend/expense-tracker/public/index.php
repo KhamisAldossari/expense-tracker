@@ -13,7 +13,7 @@ use App\Core\Router;
 use App\Controllers\AuthController; 
 use App\Controllers\CategoryController;
 use App\Core\Middleware\AuthMiddleware;
-
+use App\Controllers\ExpenseController;
 
 $request = new Request();
 $router = new Router();
@@ -31,6 +31,13 @@ $router->addRoute('POST', '/api/logout', [AuthController::class, 'logout']);
 $router->addRoute('GET', '/api/categories', [CategoryController::class, 'index']);
 $router->addRoute('POST', '/api/categories', [CategoryController::class, 'store']);
 $router->addRoute('DELETE', '/api/categories/{id}', [CategoryController::class, 'destroy']);
+
+
+$router->addRoute('GET', '/api/expenses', [ExpenseController::class, 'index']);
+$router->addRoute('POST', '/api/expenses', [ExpenseController::class, 'store']);
+$router->addRoute('GET', '/api/expenses/{id}', [ExpenseController::class, 'show']);
+$router->addRoute('PUT', '/api/expenses/{id}', [ExpenseController::class, 'update']);
+$router->addRoute('DELETE', '/api/expenses/{id}', [ExpenseController::class, 'destroy']);
 
 $response = $router->dispatch($request);
 echo json_encode($response);
