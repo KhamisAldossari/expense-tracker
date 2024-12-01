@@ -139,25 +139,87 @@ class _Features extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _FeatureItem(
-          icon: Icons.track_changes,
-          title: 'Track Expenses',
-          description: 'Monitor your spending',
+    // Get the screen width to make responsive decisions
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    // If screen is wide enough, show items in a row
+    if (screenWidth >= 768) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: const [
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: _FeatureItem(
+                  icon: Icons.track_changes,
+                  title: 'Track Expenses',
+                  description: 'Monitor your spending',
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: _FeatureItem(
+                  icon: Icons.category,
+                  title: 'Categories',
+                  description: 'Organize expenses',
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: _FeatureItem(
+                  icon: Icons.analytics,
+                  title: 'Analytics',
+                  description: 'Visualize your data',
+                ),
+              ),
+            ),
+          ],
         ),
-        _FeatureItem(
-          icon: Icons.category,
-          title: 'Categories',
-          description: 'Organize expenses',
+      );
+    }
+    
+    // For smaller screens, make it horizontally scrollable
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: const [
+            SizedBox(
+              width: 200, // Fixed width for small screens
+              child: _FeatureItem(
+                icon: Icons.track_changes,
+                title: 'Track Expenses',
+                description: 'Monitor your spending',
+              ),
+            ),
+            SizedBox(width: 16),
+            SizedBox(
+              width: 200,
+              child: _FeatureItem(
+                icon: Icons.category,
+                title: 'Categories',
+                description: 'Organize expenses',
+              ),
+            ),
+            SizedBox(width: 16),
+            SizedBox(
+              width: 200,
+              child: _FeatureItem(
+                icon: Icons.analytics,
+                title: 'Analytics',
+                description: 'Visualize your data',
+              ),
+            ),
+          ],
         ),
-        _FeatureItem(
-          icon: Icons.analytics,
-          title: 'Analytics',
-          description: 'Visualize your data',
-        ),
-      ],
+      ),
     );
   }
 }

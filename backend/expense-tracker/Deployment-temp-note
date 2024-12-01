@@ -14,4 +14,4 @@
 
 NOTE: `php migrate.php rollback` to rollback last batch
     
-6- Start the applciation via `php -S localhost:8000 -t public`
+6- Start the applciation via `php -S localhost:8576 -t public`
