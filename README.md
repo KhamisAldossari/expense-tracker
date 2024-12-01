@@ -46,6 +46,7 @@ composer install
 
 # Copy environment file
 cp .env.example .env
+source .env
 
 # Configure your .env file with your MySQL credentials:
 DB_CONNECTION=mysql
@@ -60,14 +61,13 @@ DB_PASSWORD=your_password
 docker pull mysql:8.0
 docker run --name mysql_expense_tracker -e MYSQL_ROOT_PASSWORD=rootpassword -e MYSQL_DATABASE=expense_tracker -e MYSQL_USER=admin -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:8.0
 
-# Generate application key
-php artisan key:generate
+# Migrate the database
+php migrate.php migrate
 
-# Run database migrations
-php artisan migrate
+NOTE: `php migrate.php rollback` to rollback last batch
 
-# Start the Laravel development server
-php artisan serve
+# Start the php application
+php -S localhost:8576 -t public
 ```
 
 ### 3. Frontend Setup (React + Vite)
