@@ -4,30 +4,37 @@ namespace App\Services;
 
 use App\Repositories\Interfaces\CategoryRepositoryInterface;
 
-class CategoryService
+class CategoryService 
 {
     private CategoryRepositoryInterface $categoryRepository;
-
-    public function __construct(CategoryRepositoryInterface $categoryRepository)
+    
+    public function __construct(CategoryRepositoryInterface $categoryRepository) 
     {
         $this->categoryRepository = $categoryRepository;
     }
-
-    public function getAllCategories(): array
+    
+    private function formatCategory(array $category): array 
     {
-        return $this->categoryRepository->all();
+        return [
+            'id' => $category['id'],
+            'name' => $category['name']
+        ];
     }
-
-    public function createCategory(array $data): array
+    
+    public function getAllCategories(): array 
     {
-        return $this->categoryRepository->create($data);
+        $categories = $this->categoryRepository->all();
+        return array_map([$this, 'formatCategory'], $categories);
     }
-
-    public function deleteCategory(int $id): bool
+    
+    public function createCategory(array $data): array 
     {
-        if (!$this->categoryRepository->find($id)) {
-            throw new \Exception('Category not found');
-        }
-        return $this->categoryRepository->delete($id);
+        $category = $this->categoryRepository->create($data);
+        return $this->formatCategory($category);
+    }
+    
+    public function deleteCategory(int $id): void 
+    {
+        $this->categoryRepository->delete($id);
     }
 }
