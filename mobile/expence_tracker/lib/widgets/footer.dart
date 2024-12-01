@@ -7,44 +7,48 @@ class Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-      color: Theme.of(context).colorScheme.surface,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _FooterColumn(
-                title: 'About',
-                items: ['Company', 'Team', 'Contact Us'],
-                onItemTap: (item) => _launchUrl(item),
-              ),
-              _FooterColumn(
-                title: 'Support',
-                items: ['FAQ', 'Help Center', 'Privacy Policy'],
-                onItemTap: (item) => _launchUrl(item),
-              ),
-              _FooterColumn(
-                title: 'Social',
-                items: ['Twitter', 'LinkedIn', 'GitHub'],
-                onItemTap: (item) => _launchSocialMedia(item),
-              ),
-            ],
-          ),
-          const Divider(height: 40),
-          Text(
-            '© ${DateTime.now().year} Expense Tracker. All rights reserved.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
+    // Using a SingleChildScrollView to prevent overflow on smaller screens
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        color: Theme.of(context).colorScheme.surface,
+        // Ensuring the container takes minimum full width of the screen
+        constraints: BoxConstraints(
+          minWidth: MediaQuery.of(context).size.width,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _FooterColumn(
+                  title: 'Company',
+                  items: ['About', 'Contact'],
+                  onItemTap: _launchUrl,
+                ),
+                const SizedBox(width: 48),
+                _FooterColumn(
+                  title: 'Connect',
+                  items: ['Twitter', 'LinkedIn'],
+                  onItemTap: _launchSocialMedia,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Text(
+              '© ${DateTime.now().year} Expense Tracker',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   void _launchUrl(String page) async {
-    final url = Uri.parse('https://example.com/$page');
+    final url = Uri.parse('https://example.com/$page'.toLowerCase());
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }
@@ -54,7 +58,6 @@ class Footer extends StatelessWidget {
     final urls = {
       'Twitter': 'https://twitter.com/expensetracker',
       'LinkedIn': 'https://linkedin.com/company/expensetracker',
-      'GitHub': 'https://github.com/expensetracker',
     };
     final url = Uri.parse(urls[platform]!);
     if (await canLaunchUrl(url)) {
@@ -78,6 +81,7 @@ class _FooterColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           title,
@@ -85,11 +89,15 @@ class _FooterColumn extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         ...items.map((item) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: TextButton(
             onPressed: () => onItemTap(item),
+            style: TextButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+            ),
             child: Text(item),
           ),
         )),

@@ -6,12 +6,12 @@ part of 'expense_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$expenseFiltersHash() => r'16f9434e9d5cb8c90a597dfb1d4216ea6c6bd12d';
+String _$expenseFiltersHash() => r'f4d57e8efaff6433516997dfd20c9d06f078079d';
 
 /// See also [ExpenseFilters].
 @ProviderFor(ExpenseFilters)
-final expenseFiltersProvider = AutoDisposeNotifierProvider<ExpenseFilters,
-    ({String? category, String? sortBy, String? sortOrder})>.internal(
+final expenseFiltersProvider =
+    AutoDisposeNotifierProvider<ExpenseFilters, ExpenseFilterState>.internal(
   ExpenseFilters.new,
   name: r'expenseFiltersProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -21,9 +21,8 @@ final expenseFiltersProvider = AutoDisposeNotifierProvider<ExpenseFilters,
   allTransitiveDependencies: null,
 );
 
-typedef _$ExpenseFilters = AutoDisposeNotifier<
-    ({String? category, String? sortBy, String? sortOrder})>;
-String _$expenseOperationsHash() => r'8e74c132bf4c222faad80ad93f36893d8e3479c3';
+typedef _$ExpenseFilters = AutoDisposeNotifier<ExpenseFilterState>;
+String _$expenseOperationsHash() => r'21da3f5b1228498a318f21ae5cf3728532366c57';
 
 /// See also [ExpenseOperations].
 @ProviderFor(ExpenseOperations)

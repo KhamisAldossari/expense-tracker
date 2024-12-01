@@ -6,11 +6,11 @@ part of 'providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$apiServiceHash() => r'73ad3c2e8c0d458c43bdd728c0f0fb75c5c2af98';
+String _$apiServiceHash() => r'5b8beddb448316bdae5e3963ff77601653715729';
 
 /// See also [apiService].
 @ProviderFor(apiService)
-final apiServiceProvider = AutoDisposeProvider<ApiService>.internal(
+final apiServiceProvider = Provider<ApiService>.internal(
   apiService,
   name: r'apiServiceProvider',
   debugGetCreateSourceHash:
@@ -21,7 +21,7 @@ final apiServiceProvider = AutoDisposeProvider<ApiService>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef ApiServiceRef = AutoDisposeProviderRef<ApiService>;
+typedef ApiServiceRef = ProviderRef<ApiService>;
 String _$sortedExpensesHash() => r'62d3926c507afcac6bc0800b7236d36f8a2de929';
 
 /// See also [sortedExpenses].
@@ -39,11 +39,11 @@ final sortedExpensesProvider = AutoDisposeProvider<List<Expense>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SortedExpensesRef = AutoDisposeProviderRef<List<Expense>>;
-String _$authHash() => r'd43509b2efcb167eef0a63330bb4af95baad21ef';
+String _$authHash() => r'1c73b94dd65a1f8407d9c2c3422ad3f153e97f37';
 
 /// See also [Auth].
 @ProviderFor(Auth)
-final authProvider = AutoDisposeAsyncNotifierProvider<Auth, String?>.internal(
+final authProvider = NotifierProvider<Auth, AuthState>.internal(
   Auth.new,
   name: r'authProvider',
   debugGetCreateSourceHash:
@@ -52,8 +52,8 @@ final authProvider = AutoDisposeAsyncNotifierProvider<Auth, String?>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef _$Auth = AutoDisposeAsyncNotifier<String?>;
-String _$categoriesHash() => r'f75ce55069b49a4b3b3229bbbeeb1f4d68e61e66';
+typedef _$Auth = Notifier<AuthState>;
+String _$categoriesHash() => r'cfeaa709870b7e5e631cb6d319d0512486d1a425';
 
 /// See also [Categories].
 @ProviderFor(Categories)
@@ -85,7 +85,7 @@ final expenseFiltersProvider = AutoDisposeNotifierProvider<ExpenseFilters,
 
 typedef _$ExpenseFilters = AutoDisposeNotifier<
     ({String? category, String? sortBy, String? sortOrder})>;
-String _$expensesHash() => r'faec9d46db4162726b68dbeb65cced47411b533c';
+String _$expensesHash() => r'b63853ce8ef6cbb2af006b2a3cb624ff3cd29ae6';
 
 /// See also [Expenses].
 @ProviderFor(Expenses)
