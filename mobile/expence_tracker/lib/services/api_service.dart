@@ -25,7 +25,7 @@ class ApiResponse<T> {
 class ApiService {
   static const baseUrl = 'http://localhost:8576';
   final _client = http.Client();
-  final bool useTestData = false;
+  final bool useTestData = true;
   final Logger _logger = Logger();
 
   // API Endpoints
