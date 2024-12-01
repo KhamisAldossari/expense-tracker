@@ -18,9 +18,7 @@ class CategoryController
     
     public function index(Request $request): array 
     {
-        return [
-            'data' => $this->categoryService->getAllCategories()
-        ];
+        return $this->categoryService->getAllCategories();
     }
     
     public function store(Request $request): array 
@@ -37,9 +35,8 @@ class CategoryController
         }
         
         try {
-            $category = $this->categoryService->createCategory($validData);
             http_response_code(201);
-            return ['data' => $category];
+            return $this->categoryService->createCategory($validData);
         } catch (\Exception $e) {
             http_response_code(400);
             return ['error' => $e->getMessage()];

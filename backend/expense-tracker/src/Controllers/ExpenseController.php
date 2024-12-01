@@ -20,9 +20,7 @@ class ExpenseController
     {
         $user = $request->user();
         $filters = ['user_id' => $user['id']];
-        return [
-            'data' => $this->expenseService->getAllExpenses($filters)
-        ];
+        return $this->expenseService->getAllExpenses($filters);
     }
     
     public function store(Request $request): array 
@@ -47,7 +45,7 @@ class ExpenseController
         try {
             $expense = $this->expenseService->createExpense($validData, $request->user());
             http_response_code(201);
-            return ['data' => $expense];
+            return $expense;
         } catch (\Exception $e) {
             http_response_code(400);
             return ['error' => $e->getMessage()];
@@ -65,8 +63,7 @@ class ExpenseController
         }
         
         try {
-            $expense = $this->expenseService->getExpense((int)$id, $request->user());
-            return ['data' => $expense];
+            return $this->expenseService->getExpense((int)$id, $request->user());
         } catch (\Exception $e) {
             http_response_code(404);
             return ['error' => $e->getMessage()];
@@ -97,8 +94,7 @@ class ExpenseController
         }
         
         try {
-            $expense = $this->expenseService->updateExpense($validData, (int)$id, $request->user());
-            return ['data' => $expense];
+            return $this->expenseService->updateExpense($validData, (int)$id, $request->user());
         } catch (\Exception $e) {
             http_response_code(404);
             return ['error' => $e->getMessage()];

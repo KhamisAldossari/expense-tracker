@@ -15,11 +15,26 @@ class ExpenseService
         $this->loggingService = new LoggingService();
     }
     
+    private function formatExpense(array $expense): array 
+    {
+        return [
+            'id' => $expense['id'],
+            'amount' => $expense['amount'],
+            'description' => $expense['description'],
+            'expense_date' => $expense['expense_date'],
+            'created_at' => $expense['created_at'],
+            'category' => [
+                'id' => $expense['category_id'],
+                'name' => $expense['category_name']
+            ]
+        ];
+    }
+    
     public function getAllExpenses(array $filters): array 
     {
         $expenses = $this->expenseRepository->all($filters);
         $this->loggingService->logExpenseActivity('list', ['filters' => $filters]);
-        return $expenses;
+        return array_map([$this, 'formatExpense'], $expenses);
     }
     
     public function createExpense(array $data, array $user): array 
@@ -27,7 +42,7 @@ class ExpenseService
         $data['user_id'] = $user['id'];
         $expense = $this->expenseRepository->create($data);
         $this->loggingService->logExpenseActivity('create', $expense);
-        return $expense;
+        return $this->formatExpense($expense);
     }
     
     public function getExpense(int $id, array $user): array 
@@ -39,7 +54,7 @@ class ExpenseService
         }
         
         $this->loggingService->logExpenseActivity('view', $expense);
-        return $expense;
+        return $this->formatExpense($expense);
     }
     
     public function updateExpense(array $data, int $id, array $user): array 
@@ -56,7 +71,7 @@ class ExpenseService
         }
         
         $this->loggingService->logExpenseActivity('update', $expense, $oldData);
-        return $expense;
+        return $this->formatExpense($expense);
     }
     
     public function deleteExpense(int $id, array $user): void 
